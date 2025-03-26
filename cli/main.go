@@ -15,12 +15,7 @@ var proxy = flag.String("proxy", "localhost:50051", "The proxy address")
 
 var numConcurrentRequests = flag.Int("concurrent", 1, "The number of concurrent requests")
 var durationSec = flag.Int("duration", 60, "The duration of the test in seconds")
-
-func call(c proto.PingClient) (*proto.PingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
-	defer cancel()
-	return c.Ping(ctx, &proto.PingRequest{Message: "Ping"})
-}
+var callType = flag.String("call", "ping", "The call type: ping or schedule")
 
 func main() {
 	flag.Parse()
@@ -45,14 +40,7 @@ loop:
 		default:
 			guard <- struct{}{}
 			go func() {
-				_, err := call(c)
-				if err != nil {
-					// log.Println("Error:", err)
-					numFailures++
-				} else {
-					// log.Println("Success")
-					numSuccess++
-				}
+				numFailures, numSuccess = call(c, numFailures, numSuccess)
 				<-guard
 				// log.Printf("Iteration %d\n", success)
 			}()
@@ -61,4 +49,40 @@ loop:
 	elapsed := time.Since(start)
 	log.Printf("success: %d failures: %d Average time: %s\n", numSuccess, numFailures, elapsed/time.Duration(numSuccess))
 
+}
+
+func call(c proto.PingClient, numFailures int, numSuccess int) (int, int) {
+	switch *callType {
+	case "ping":
+		_, err := callPing(c)
+		if err != nil {
+			// log.Println("Error:", err)
+			numFailures++
+		} else {
+			// log.Println("Success")
+			numSuccess++
+		}
+	case "schedule":
+		_, err := callSchedule(c)
+		if err != nil {
+			// log.Println("Error:", err)
+			numFailures++
+		} else {
+			// log.Println("Success")
+			numSuccess++
+		}
+	}
+	return numFailures, numSuccess
+}
+
+func callSchedule(c proto.PingClient) (*proto.ScheduleWorkflowResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	defer cancel()
+	return c.ScheduleWorkflow(ctx, &proto.ScheduleWorkflowRequest{Message: "Schedule"})
+}
+
+func callPing(c proto.PingClient) (*proto.PingResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	defer cancel()
+	return c.Ping(ctx, &proto.PingRequest{Message: "Ping"})
 }

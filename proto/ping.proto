@@ -6,6 +6,8 @@ package proto;
 
 service Ping {
   rpc Ping(PingRequest) returns (PingResponse) {}
+  rpc ScheduleWorkflow(ScheduleWorkflowRequest) returns (ScheduleWorkflowResponse) {}
+  rpc ReportTaskResult(ReportTaskResultRequest) returns (ReportTaskResultResponse) {}
 }
 
 message PingRequest {
@@ -13,5 +15,23 @@ message PingRequest {
 }   
 
 message PingResponse {
+  string message = 1;
+}
+
+message ScheduleWorkflowRequest {
+  string message = 1;
+}
+
+message ScheduleWorkflowResponse {
+  int32 shard = 1;
+  string message = 2;
+}
+
+message ReportTaskResultRequest {
+  int32 shard = 1;
+  string message = 2;
+}
+
+message ReportTaskResultResponse {
   string message = 1;
 }

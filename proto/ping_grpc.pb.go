@@ -19,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Ping_Ping_FullMethodName = "/proto.Ping/Ping"
+	Ping_Ping_FullMethodName             = "/proto.Ping/Ping"
+	Ping_ScheduleWorkflow_FullMethodName = "/proto.Ping/ScheduleWorkflow"
+	Ping_ReportTaskResult_FullMethodName = "/proto.Ping/ReportTaskResult"
 )
 
 // PingClient is the client API for Ping service.
@@ -27,6 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PingClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	ScheduleWorkflow(ctx context.Context, in *ScheduleWorkflowRequest, opts ...grpc.CallOption) (*ScheduleWorkflowResponse, error)
+	ReportTaskResult(ctx context.Context, in *ReportTaskResultRequest, opts ...grpc.CallOption) (*ReportTaskResultResponse, error)
 }
 
 type pingClient struct {
@@ -47,11 +51,33 @@ func (c *pingClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *pingClient) ScheduleWorkflow(ctx context.Context, in *ScheduleWorkflowRequest, opts ...grpc.CallOption) (*ScheduleWorkflowResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScheduleWorkflowResponse)
+	err := c.cc.Invoke(ctx, Ping_ScheduleWorkflow_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pingClient) ReportTaskResult(ctx context.Context, in *ReportTaskResultRequest, opts ...grpc.CallOption) (*ReportTaskResultResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReportTaskResultResponse)
+	err := c.cc.Invoke(ctx, Ping_ReportTaskResult_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PingServer is the server API for Ping service.
 // All implementations must embed UnimplementedPingServer
 // for forward compatibility.
 type PingServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	ScheduleWorkflow(context.Context, *ScheduleWorkflowRequest) (*ScheduleWorkflowResponse, error)
+	ReportTaskResult(context.Context, *ReportTaskResultRequest) (*ReportTaskResultResponse, error)
 	mustEmbedUnimplementedPingServer()
 }
 
@@ -64,6 +90,12 @@ type UnimplementedPingServer struct{}
 
 func (UnimplementedPingServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedPingServer) ScheduleWorkflow(context.Context, *ScheduleWorkflowRequest) (*ScheduleWorkflowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScheduleWorkflow not implemented")
+}
+func (UnimplementedPingServer) ReportTaskResult(context.Context, *ReportTaskResultRequest) (*ReportTaskResultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReportTaskResult not implemented")
 }
 func (UnimplementedPingServer) mustEmbedUnimplementedPingServer() {}
 func (UnimplementedPingServer) testEmbeddedByValue()              {}
@@ -104,6 +136,42 @@ func _Ping_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Ping_ScheduleWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduleWorkflowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PingServer).ScheduleWorkflow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Ping_ScheduleWorkflow_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PingServer).ScheduleWorkflow(ctx, req.(*ScheduleWorkflowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Ping_ReportTaskResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReportTaskResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PingServer).ReportTaskResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Ping_ReportTaskResult_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PingServer).ReportTaskResult(ctx, req.(*ReportTaskResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Ping_ServiceDesc is the grpc.ServiceDesc for Ping service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +182,14 @@ var Ping_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _Ping_Ping_Handler,
+		},
+		{
+			MethodName: "ScheduleWorkflow",
+			Handler:    _Ping_ScheduleWorkflow_Handler,
+		},
+		{
+			MethodName: "ReportTaskResult",
+			Handler:    _Ping_ReportTaskResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

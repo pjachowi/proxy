@@ -16,10 +16,24 @@ type server struct {
 	proto.UnimplementedPingServer
 }
 
+var shard = flag.Int("shard", 0, "The shard number")
+
 func (s *server) Ping(ctx context.Context, in *proto.PingRequest) (*proto.PingResponse, error) {
-	// log.Printf("Request: %s\n", in.Message)
-	// time.Sleep(time.Millisecond * 100)
+	log.Printf("Request: %s\n", in.Message)
 	return &proto.PingResponse{Message: "Pong"}, nil
+}
+
+func (s *server) ScheduleWorkflow(ctx context.Context, in *proto.ScheduleWorkflowRequest) (*proto.ScheduleWorkflowResponse, error) {
+	log.Printf("Request: %s\n", in.Message)
+	return &proto.ScheduleWorkflowResponse{Shard: int32(*shard), Message: fmt.Sprintf("Scheduled %d", *shard)}, nil
+}
+
+func (s *server) ReportTaskResult(ctx context.Context, in *proto.ReportTaskResultRequest) (*proto.ReportTaskResultResponse, error) {
+	log.Printf("Request: %s\n", in.Message)
+	if in.Shard != int32(*shard) {
+		return &proto.ReportTaskResultResponse{Message: "Shard mismatch"}, nil
+	}
+	return &proto.ReportTaskResultResponse{Message: "Reported"}, nil
 }
 
 var port = flag.Int("port", 50050, "The server port")
